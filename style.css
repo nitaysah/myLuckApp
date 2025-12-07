@@ -1,0 +1,589 @@
+:root {
+    /* Light Celestial Color Palette - matching iOS app */
+    --accent-purple: rgba(191, 153, 242, 1);      /* Light purple */
+    --accent-purple-light: rgba(191, 153, 242, 0.3);
+    --accent-gold: rgba(255, 230, 128, 1);        /* Light yellow/gold */
+    --accent-gold-light: rgba(255, 230, 128, 0.5);
+    --deep-purple: rgba(128, 77, 179, 1);         /* Medium purple for text */
+    --deep-purple-light: rgba(128, 77, 179, 0.7);
+    
+    /* Background colors */
+    --bg-cream: rgba(255, 250, 230, 1);           /* Soft cream/yellow */
+    --bg-lavender: rgba(242, 230, 255, 1);        /* Very light purple */
+    --bg-white: rgba(250, 243, 255, 1);           /* Lavender white */
+    
+    --card-bg: rgba(255, 255, 255, 0.6);
+    --card-border: rgba(191, 153, 242, 0.3);
+    --input-bg: rgba(255, 255, 255, 0.7);
+    --text-primary: rgba(128, 77, 179, 1);
+    --text-secondary: rgba(128, 77, 179, 0.7);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, var(--bg-cream) 0%, var(--bg-lavender) 50%, var(--bg-white) 100%);
+}
+
+/* Galaxy Animation Background */
+.galaxy-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.galaxy-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--accent-purple-light) 0%, rgba(191, 153, 242, 0.1) 40%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(30px);
+}
+
+.galaxy-core {
+    position: absolute;
+    top: calc(20% + 160px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, var(--accent-gold) 0%, var(--accent-purple-light) 50%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(8px);
+}
+
+.galaxy-arms {
+    position: absolute;
+    top: calc(20% + 100px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    animation: rotateGalaxy 30s linear infinite;
+}
+
+.spiral-arm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 4px;
+    transform-origin: left center;
+}
+
+.spiral-arm::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-purple) 0%, transparent 100%);
+    border-radius: 4px;
+    filter: blur(2px);
+}
+
+.arm-1 { transform: rotate(0deg); }
+.arm-2 { transform: rotate(90deg); }
+.arm-3 { transform: rotate(180deg); }
+.arm-4 { transform: rotate(270deg); }
+
+.arm-1::before, .arm-3::before {
+    background: linear-gradient(90deg, var(--accent-purple) 0%, transparent 100%);
+}
+
+.arm-2::before, .arm-4::before {
+    background: linear-gradient(90deg, var(--accent-gold-light) 0%, transparent 100%);
+}
+
+.stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20% 15%, var(--accent-gold) 100%, transparent),
+        radial-gradient(2px 2px at 40% 25%, var(--accent-purple) 100%, transparent),
+        radial-gradient(1px 1px at 60% 10%, var(--accent-gold) 100%, transparent),
+        radial-gradient(2px 2px at 80% 20%, var(--accent-purple) 100%, transparent),
+        radial-gradient(1px 1px at 10% 30%, var(--accent-gold) 100%, transparent),
+        radial-gradient(2px 2px at 90% 35%, var(--accent-purple) 100%, transparent),
+        radial-gradient(1px 1px at 30% 40%, var(--accent-gold) 100%, transparent),
+        radial-gradient(2px 2px at 70% 45%, var(--accent-purple) 100%, transparent);
+    animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes rotateGalaxy {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to { transform: translateX(-50%) rotate(360deg); }
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* App Container */
+.app-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Views */
+.view {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    animation: fadeIn 0.4s ease;
+}
+
+.view.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+header {
+    text-align: center;
+    padding-top: 60px;
+    margin-bottom: 30px;
+}
+
+.logo-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-purple-light);
+    border-radius: 50%;
+    filter: blur(20px);
+}
+
+.sparkle-icon {
+    font-size: 60px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(255, 230, 128, 0.5));
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--deep-purple);
+    margin-bottom: 8px;
+}
+
+header p {
+    font-size: 0.95rem;
+    color: var(--deep-purple-light);
+}
+
+/* Card */
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+/* Input Groups */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group:last-of-type {
+    margin-bottom: 0;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--deep-purple-light);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+}
+
+.label-icon {
+    font-size: 0.85rem;
+}
+
+input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--input-bg);
+    border: 1px solid var(--accent-purple-light);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--deep-purple);
+    transition: all 0.2s ease;
+}
+
+input::placeholder {
+    color: var(--deep-purple-light);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 3px var(--accent-purple-light);
+    background: white;
+}
+
+/* Zodiac Display */
+#zodiac-display {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--accent-gold-light);
+    border: 1px solid var(--accent-gold);
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#zodiac-display.zodiac-hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    margin-top: 0;
+    padding: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.zodiac-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--deep-purple-light);
+    margin-bottom: 8px;
+}
+
+.zodiac-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#zodiac-icon {
+    font-size: 2.5rem;
+}
+
+#zodiac-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--deep-purple);
+}
+
+/* Buttons */
+.primary-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
+    border: none;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--deep-purple);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(255, 230, 128, 0.4);
+    transition: all 0.2s ease;
+    margin-top: auto;
+}
+
+.primary-btn:disabled {
+    background: linear-gradient(135deg, #ccc 0%, #ddd 100%);
+    box-shadow: none;
+    cursor: not-allowed;
+    color: #999;
+}
+
+.primary-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(255, 230, 128, 0.5);
+}
+
+.primary-btn:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+.secondary-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: white;
+    border: 2px solid var(--accent-purple);
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--deep-purple);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+    background: var(--accent-purple-light);
+}
+
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--deep-purple);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: white;
+}
+
+/* Result View */
+#result-view {
+    padding-top: 60px;
+}
+
+.result-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.result-sparkle {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.result-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--deep-purple);
+}
+
+/* Luck Circle */
+.luck-circle {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 24px;
+}
+
+.progress-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: var(--accent-purple-light);
+    stroke-width: 12;
+}
+
+.progress-ring-fill {
+    fill: none;
+    stroke: url(#gradient);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 565.48;
+    stroke-dashoffset: 565.48;
+    transition: stroke-dashoffset 1.5s ease-out;
+}
+
+.luck-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    display: flex;
+    align-items: baseline;
+}
+
+#result-percentage {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--deep-purple);
+}
+
+.percent-sign {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--deep-purple-light);
+}
+
+.luck-label {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--deep-purple-light);
+}
+
+/* Fortune Card */
+.fortune-card {
+    width: 100%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.fortune-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--deep-purple);
+    margin-bottom: 12px;
+}
+
+#fortune-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--deep-purple-light);
+}
+
+/* Traits Container */
+.traits-container {
+    width: 100%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.traits-container h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--deep-purple);
+    margin-bottom: 12px;
+}
+
+.traits-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.trait-tag {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, var(--accent-purple-light) 0%, var(--accent-gold-light) 100%);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--deep-purple);
+}
+
+/* SVG Gradient Definition */
+svg defs {
+    position: absolute;
+}
+
+/* Responsive */
+@media (max-width: 440px) {
+    .app-container {
+        padding: 16px;
+    }
+    
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    .luck-circle {
+        width: 180px;
+        height: 180px;
+    }
+    
+    #result-percentage {
+        font-size: 3rem;
+    }
+}
+
+/* Add to home screen prompt styling for PWA feel */
+@media (display-mode: standalone) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
