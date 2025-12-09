@@ -209,7 +209,7 @@
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
-        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
         const manualBtn = document.getElementById('manual-login-btn');
@@ -229,6 +229,21 @@
             loading.classList.remove('active');
         }
 
+        // Helper: Resolve Username to Email
+        async function resolveEmail(input) {
+            if (input.includes('@')) return input;
+
+            // Input is likely a username, query Firestore
+            const q = query(collection(db, "users"), where("username", "==", input));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                throw new Error("No account found with this username.");
+            }
+
+            return querySnapshot.docs[0].data().email;
+        }
+
         // Manual Auth Handler - LOGIN ONLY
         async function handleLogin() {
             const loginInput = emailInput.value.trim();
@@ -241,20 +256,9 @@
 
             try {
                 showLoading('Verifying...');
-                let emailToUse = loginInput;
 
-                // Check if input is a username (no '@')
-                if (!loginInput.includes('@')) {
-                    const q = query(collection(db, "users"), where("username", "==", loginInput));
-                    const querySnapshot = await getDocs(q);
-
-                    if (querySnapshot.empty) {
-                        throw new Error("No account found with this username.");
-                    }
-
-                    // Get the first match (usernames should be unique)
-                    emailToUse = querySnapshot.docs[0].data().email;
-                }
+                // key logic: get email from username if needed
+                const emailToUse = await resolveEmail(loginInput);
 
                 showLoading('Signing In...');
 
@@ -272,7 +276,6 @@
                     localStorage.setItem('currentUser', JSON.stringify(userData));
                     window.location.href = 'app.html';
                 } else {
-                    // Fallback if no Firestore doc exists
                     alert("User profile not found. Please contact support.");
                     hideLoading();
                 }
@@ -292,14 +295,34 @@
 
         if (manualBtn) manualBtn.addEventListener('click', handleLogin);
 
-        if (forgotLink) forgotLink.addEventListener('click', (e) => {
+        // Forgot Password Handler
+        if (forgotLink) forgotLink.addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = emailInput.value.trim();
-            if (!email || !email.includes('@')) {
-                alert('Please enter your EMAIL address to reset your password.');
-            } else {
-                // We'll update this to real Firebase reset later if requested
-                alert(`Password reset link has been sent to ${email}`);
+            const loginInput = emailInput.value.trim();
+
+            if (!loginInput) {
+                alert('Please enter your Email or Username in the box above to reset your password.');
+                return;
+            }
+
+            try {
+                showLoading('Checking Account...');
+
+                // Resolve email (in case they typed a username)
+                const emailToUse = await resolveEmail(loginInput);
+
+                showLoading('Sending Email...');
+                await sendPasswordResetEmail(auth, emailToUse);
+
+                hideLoading();
+                alert(`Password reset link sent to: ${emailToUse}\nPlease check your inbox/spam.`);
+
+            } catch (error) {
+                hideLoading();
+                console.error("Reset Error:", error);
+
+                let msg = error.code === 'auth/user-not-found' ? "No account found with this email." : error.message;
+                alert(msg);
             }
         });
 
