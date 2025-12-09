@@ -16,6 +16,53 @@ document.addEventListener('DOMContentLoaded', () => {
     let name = '';
     let dob = '';
 
+    // Check for "Logged In" user from Get Started Page
+    const storedUser = localStorage.getItem('currentUser');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userGreeting = document.getElementById('user-greeting');
+
+    if (storedUser) {
+        try {
+            const user = JSON.parse(storedUser);
+            if (user.name) {
+                // Auto-fill form
+                nameInput.value = user.name;
+                name = user.name;
+
+                if (user.dob) {
+                    dobInput.value = user.dob;
+                    dob = user.dob;
+                }
+
+                // Show Logout Button with Name
+                if (logoutBtn && userGreeting) {
+                    userGreeting.textContent = `Hi, ${user.name.split(' ')[0]}`; // First name only
+                    logoutBtn.style.display = 'flex';
+
+                    // Logout Logic
+                    logoutBtn.addEventListener('click', () => {
+                        if (confirm('Are you sure you want to sign out?')) {
+                            localStorage.removeItem('currentUser');
+                            window.location.href = 'index.html';
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Error parsing user data", e);
+        }
+    }
+
+    // Set default date to 25 years ago ONLY if empty
+    if (!dobInput.value) {
+        const defaultDate = new Date();
+        defaultDate.setFullYear(defaultDate.getFullYear() - 25);
+        dobInput.valueAsDate = defaultDate;
+    }
+
+    // Initial check to enable button/update zodiac
+    checkInputs();
+
     // Add SVG gradient definition for the progress ring
     const svg = document.querySelector('.progress-ring');
     if (svg) {
@@ -29,7 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
         svg.insertBefore(defs, svg.firstChild);
     }
 
-    // Logic ported from Swift myLuckLogic.swift
+    // ==========================================
+    // Logic ported EXACTLY from myLuckLogic.swift
+    // ==========================================
+
     function reduceToSingleDigit(number) {
         let n = Math.abs(number);
         while (n > 9) {
@@ -43,107 +93,235 @@ document.addEventListener('DOMContentLoaded', () => {
         return n;
     }
 
-    function stringHash(str) {
-        let hash = 5381;
-        for (let i = 0; i < str.length; i++) {
-            hash = ((hash << 5) + hash) + str.charCodeAt(i);
-        }
-        return hash;
-    }
-
     function calculateLuckyPercentage(nameStr, dobStr) {
         const [year, month, day] = dobStr.split('-').map(Number);
 
+        // 1. Calculate Life Path Number
         const lifePathNumber = reduceToSingleDigit(day) + reduceToSingleDigit(month) + reduceToSingleDigit(year);
         const finalLifePath = reduceToSingleDigit(lifePathNumber);
 
+        // 2. Daily Seed
         const now = new Date();
         const dailyString = `${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}`;
 
+        // 3. Name Hash (Matching Swift's .asciiValue behavior)
         const nameLower = nameStr.toLowerCase();
-        let nameSum = 0;
+        let nameHash = 0;
         for (let i = 0; i < nameLower.length; i++) {
-            nameSum += nameLower.charCodeAt(i);
+            const charCode = nameLower.charCodeAt(i);
+            // Swift's .asciiValue returns nil for non-ASCII, treating as 0
+            const val = (charCode > 127) ? 0 : charCode;
+            nameHash += val;
         }
 
-        const combinedString = `${finalLifePath}-${nameSum}-${dailyString}`;
-        const hash = stringHash(combinedString);
+        // 4. Combine using djb2 hash (Matching Swift's Int64 overflow behavior)
+        const combinedString = `${finalLifePath}-${nameHash}-${dailyString}`;
 
-        const percentage = Math.abs(hash) % 101;
+        // Use BigInt to simulate 64-bit signed integer behavior
+        let hash = BigInt(5381);
+
+        for (let i = 0; i < combinedString.length; i++) {
+            const charCode = combinedString.charCodeAt(i);
+            const val = BigInt((charCode > 127) ? 0 : charCode);
+
+            // hash = ((hash << 5) + hash) + val
+            // equivalent to: hash * 33 + val
+            // We must simulate strict 64-bit wrapping using asIntN
+
+            const shifted = BigInt.asIntN(64, hash << 5n);
+            const sumOriginal = BigInt.asIntN(64, shifted + hash);
+            hash = BigInt.asIntN(64, sumOriginal + val);
+        }
+
+        // 5. Normalize to 0-100
+        // Swift: abs(hash) % 101. 
+        // Note: BigInt abs is not built-in, so we check functionality manually.
+        const absHash = (hash < 0n) ? -hash : hash;
+        const percentage = Number(absHash % 101n);
+
         return percentage;
     }
 
-    // Zodiac Logic - matching iOS app
-    const zodiacData = {
-        "Aries": { icon: "♈️", element: "Fire", traits: ["Bold", "Ambitious", "Energetic"] },
-        "Taurus": { icon: "♉️", element: "Earth", traits: ["Reliable", "Patient", "Devoted"] },
-        "Gemini": { icon: "♊️", element: "Air", traits: ["Curious", "Adaptable", "Witty"] },
-        "Cancer": { icon: "♋️", element: "Water", traits: ["Intuitive", "Loyal", "Caring"] },
-        "Leo": { icon: "♌️", element: "Fire", traits: ["Creative", "Passionate", "Generous"] },
-        "Virgo": { icon: "♍️", element: "Earth", traits: ["Analytical", "Practical", "Diligent"] },
-        "Libra": { icon: "♎️", element: "Air", traits: ["Diplomatic", "Fair", "Social"] },
-        "Scorpio": { icon: "♏️", element: "Water", traits: ["Determined", "Brave", "Loyal"] },
-        "Sagittarius": { icon: "♐️", element: "Fire", traits: ["Optimistic", "Adventurous", "Free"] },
-        "Capricorn": { icon: "♑️", element: "Earth", traits: ["Disciplined", "Ambitious", "Wise"] },
-        "Aquarius": { icon: "♒️", element: "Air", traits: ["Progressive", "Original", "Humanitarian"] },
-        "Pisces": { icon: "♓️", element: "Water", traits: ["Artistic", "Intuitive", "Compassionate"] }
-    };
-
+    // Zodiac Logic - EXACT match from myLuckLogic.swift
     function getZodiacSign(day, month) {
-        const zodiacSigns = [
-            "Capricorn", "Aquarius", "Pisces", "Aries", "Taurus", "Gemini",
-            "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius"
-        ];
-        const cutoffDates = [20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22];
-
-        let signIndex = month - 1;
-        if (day < cutoffDates[signIndex]) {
-            signIndex = (signIndex - 1 + 12) % 12;
+        switch (month) {
+            case 1: return (day >= 20) ? { name: "Aquarius", icon: "♒️" } : { name: "Capricorn", icon: "♑️" };
+            case 2: return (day >= 19) ? { name: "Pisces", icon: "♓️" } : { name: "Aquarius", icon: "♒️" };
+            case 3: return (day >= 21) ? { name: "Aries", icon: "♈️" } : { name: "Pisces", icon: "♓️" };
+            case 4: return (day >= 20) ? { name: "Taurus", icon: "♉️" } : { name: "Aries", icon: "♈️" };
+            case 5: return (day >= 21) ? { name: "Gemini", icon: "♊️" } : { name: "Taurus", icon: "♉️" };
+            case 6: return (day >= 22) ? { name: "Cancer", icon: "♋️" } : { name: "Gemini", icon: "♊️" };
+            case 7: return (day >= 23) ? { name: "Leo", icon: "♌️" } : { name: "Cancer", icon: "♋️" };
+            case 8: return (day >= 23) ? { name: "Virgo", icon: "♍️" } : { name: "Leo", icon: "♌️" };
+            case 9: return (day >= 23) ? { name: "Libra", icon: "♎️" } : { name: "Virgo", icon: "♍️" };
+            case 10: return (day >= 24) ? { name: "Scorpio", icon: "♏️" } : { name: "Libra", icon: "♎️" };
+            case 11: return (day >= 23) ? { name: "Sagittarius", icon: "♐️" } : { name: "Scorpio", icon: "♏️" };
+            case 12: return (day >= 22) ? { name: "Capricorn", icon: "♑️" } : { name: "Sagittarius", icon: "♐️" };
+            default: return { name: "Unknown", icon: "❓" };
         }
-        return zodiacSigns[signIndex];
     }
 
-    // Fortune explanation generator - matching iOS app
+    // Fortune explanation generator - EXACT match from myLuckLogic.swift
     function generateLuckExplanation(percentage, nameStr, dobStr) {
         const [year, month, day] = dobStr.split('-').map(Number);
-        const sign = getZodiacSign(day, month);
-        const signData = zodiacData[sign];
+        const zodiac = getZodiacSign(day, month);
+        const sign = zodiac.name;
 
-        const now = new Date();
-        const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+        // All traits from Swift
+        const allTraits = [
+            "Resilient", "Intuitive", "Charismatic", "Analytical", "Creative",
+            "Bold", "Empathetic", "Strategic", "Patient", "Adaptive",
+            "Visionary", "Determined", "Compassionate", "Resourceful", "Optimistic",
+            "Courageous", "Wise", "Confident", "Ambitious", "Graceful"
+        ];
 
-        let explanation = "";
+        // Use percentage to select traits - different percentage = different traits
+        const trait1 = allTraits[percentage % allTraits.length];
+        const trait2 = allTraits[(percentage * 7) % allTraits.length];
+        const trait3 = allTraits[(percentage * 13) % allTraits.length];
+        const selectedTraits = [...new Set([trait1, trait2, trait3])].slice(0, 3);
 
-        if (percentage >= 80) {
-            explanation = `Incredible cosmic alignment today, ${nameStr}! As a ${sign}, your ${signData.element} energy is radiating at peak levels. The stars suggest this ${dayOfWeek} holds exceptional fortune for you. Trust your instincts and embrace opportunities!`;
-        } else if (percentage >= 60) {
-            explanation = `Great energy surrounds you today, ${nameStr}! Your ${sign} nature is well-aligned with today's celestial patterns. This ${dayOfWeek} favors bold decisions and meaningful connections.`;
-        } else if (percentage >= 40) {
-            explanation = `A balanced day awaits, ${nameStr}. As a ${sign}, you're in harmony with the universe's rhythm today. This ${dayOfWeek} is perfect for reflection and steady progress.`;
-        } else if (percentage >= 20) {
-            explanation = `The cosmos suggests a contemplative ${dayOfWeek}, ${nameStr}. Your ${sign} wisdom will guide you through any challenges. Focus on self-care and patience today.`;
+        // === EXCEPTIONAL LUCK (85-100) ===
+        const exceptionalStatements = [
+            "The stars have aligned perfectly for you today! Fortune favors the bold, and you're radiating unstoppable energy.",
+            "An extraordinary wave of cosmic luck surrounds you. The universe is conspiring in your favor!",
+            "Your celestial chart reveals a rare golden alignment. Today, you are a magnet for good things.",
+            "The star of riches is shining brightly upon you. Expect unexpected blessings and thrilling opportunities.",
+            "You're on a legendary lucky streak! The cosmos has opened its treasure chest just for you.",
+            "I am capable of achieving greatness—and today proves it! Success and prosperity flow toward you.",
+            "Everything is going according to plan. You're in the right place at the right time.",
+            "Your hard work is about to pay off magnificently. Trust your instincts—they're supercharged today."
+        ];
+
+        const exceptionalInsights = [
+            "Take bold action; success will follow you.",
+            "An unexpected opportunity may change everything.",
+            "Love and abundance are flowing your way.",
+            "You attract success and prosperity effortlessly.",
+            "Every day you are getting closer to reaching your goals.",
+            "The universe conspires in your favor to achieve your dreams.",
+            "You are energized by your goals and dreams.",
+            "Trust that miracles are happening right now."
+        ];
+
+        // === GREAT LUCK (70-84) ===
+        const greatStatements = [
+            `Your ${sign} energy is harmonizing beautifully with today's celestial movements. Great things await!`,
+            "The cosmic winds are blowing strongly in your favor. You have the power to create a life you love.",
+            "Fortune is smiling upon you today. Your heart is in a place to draw true happiness.",
+            "A thrilling time is in your near future. The cards reveal what the heart conceals.",
+            "Your aura is glowing with positive vibrations. You're worthy of all the good coming your way.",
+            "I am confident in my abilities and decisions—and so should you be today!",
+            "You embrace challenges as opportunities to grow. That mindset is paying off.",
+            "Positive energy attracts positive outcomes. Keep shining!"
+        ];
+
+        const greatInsights = [
+            "Now is the time to try something new—you will benefit.",
+            "Someone special is thinking of you right now.",
+            "A decision you've been pondering will become clear.",
+            "Your creativity is at its peak—express yourself!",
+            "I am open to new possibilities and opportunities.",
+            "I am constantly growing and improving.",
+            "I believe in myself and my vision.",
+            "Great things are unfolding for me."
+        ];
+
+        // === MODERATE LUCK (50-69) ===
+        const moderateStatements = [
+            `As a ${sign}, you're navigating steady cosmic currents today. Balance is your superpower.`,
+            "The universe is working behind the scenes for you. Patience will reveal hidden blessings.",
+            "Your path is illuminated with gentle moonlight. Trust the journey you're on.",
+            "Moderate fortune surrounds you—stay grounded and watch for subtle signs.",
+            "Today brings stability and quiet strength. You're exactly where you need to be.",
+            "Life is 10% what happens to you and 90% of how you react to it. React wisely.",
+            "Luck is what happens when preparation meets opportunity. Keep preparing.",
+            "Small steps today lead to big wins tomorrow."
+        ];
+
+        const moderateInsights = [
+            "Focus on gratitude—it multiplies your blessings.",
+            "A friend may offer valuable advice today.",
+            "Stay open to unexpected conversations.",
+            "Your resilience is being recognized by the universe.",
+            "I am in the right place at the right time.",
+            "I trust the timing of my life.",
+            "Every experience is valuable for my growth.",
+            "I am exactly where I need to be."
+        ];
+
+        // === LOW LUCK (30-49) ===
+        const lowStatements = [
+            "The cosmic energy is asking you to slow down and reflect. Tomorrow's fortunes are the dreams of today.",
+            `As a ${sign}, you're being called to conserve your energy. This is a time for inner growth.`,
+            "The stars suggest a quiet day ahead. Use this time to recharge your spirit.",
+            "Fortune is taking a brief pause—but remember, you are capable of figuring this out.",
+            "A gentle reminder from the cosmos: every day can't be extraordinary, and that's okay.",
+            "You have to remember that the hard days are what make you stronger.",
+            "A bad day doesn't cancel out a good life. Keep going.",
+            "This too shall pass. Your comeback story is being written."
+        ];
+
+        const lowInsights = [
+            "Rest and self-care will amplify tomorrow's luck.",
+            "Avoid major decisions—clarity comes with time.",
+            "Something you lost may turn up soon.",
+            "Embrace the calm; it precedes the storm of success.",
+            "Your needs are important and valid. Honor them.",
+            "I am resilient and can overcome any obstacle.",
+            "Tomorrow holds brighter possibilities.",
+            "Every setback is a setup for a comeback."
+        ];
+
+        // === VERY LOW LUCK (0-29) ===
+        const veryLowStatements = [
+            "The celestial bodies are in a protective formation. Lay low and trust that this too shall pass.",
+            "Today's chart urges caution, but remember: you are resilient and can overcome any challenge.",
+            "The universe is asking you to pause and redirect. Sometimes delay is divine protection.",
+            "Low cosmic energy today, but your inner strength remains unshakable. You've got this!",
+            "The stars advise patience. Fortune favors those who wait wisely.",
+            "Tough times never last, but tough people do. You are tougher than you know.",
+            "Our greatest glory is not in never falling, but in rising every time we fall.",
+            "Even unlucky days end, but your spirit decides what stays behind."
+        ];
+
+        const veryLowInsights = [
+            "Postpone risks; focus on what you can control.",
+            "Unexpected help may arrive when you least expect it.",
+            "Use this time for planning and preparation.",
+            "Stars can't shine without darkness. Your light is coming.",
+            "Hardships often prepare ordinary people for an extraordinary destiny.",
+            "The best view comes after the hardest climb.",
+            "Resilience is stitched together from the fabric of unlucky moments.",
+            "A run of bad luck is only a detour, not a destination."
+        ];
+
+        // Select statement and insight based on percentage (directly!)
+        let fortuneStatement, cosmicInsight;
+
+        if (percentage >= 85) {
+            fortuneStatement = exceptionalStatements[percentage % exceptionalStatements.length];
+            cosmicInsight = exceptionalInsights[percentage % exceptionalInsights.length];
+        } else if (percentage >= 70) {
+            fortuneStatement = greatStatements[percentage % greatStatements.length];
+            cosmicInsight = greatInsights[percentage % greatInsights.length];
+        } else if (percentage >= 50) {
+            fortuneStatement = moderateStatements[percentage % moderateStatements.length];
+            cosmicInsight = moderateInsights[percentage % moderateInsights.length];
+        } else if (percentage >= 30) {
+            fortuneStatement = lowStatements[percentage % lowStatements.length];
+            cosmicInsight = lowInsights[percentage % lowInsights.length];
         } else {
-            explanation = `Today calls for inner strength, ${nameStr}. As a ${sign}, your ${signData.element} resilience will see you through. Use this ${dayOfWeek} for planning and preparation.`;
+            fortuneStatement = veryLowStatements[percentage % veryLowStatements.length];
+            cosmicInsight = veryLowInsights[percentage % veryLowInsights.length];
         }
 
-        return explanation;
-    }
+        const fullExplanation = `${fortuneStatement}\n\n✨ ${cosmicInsight}\n\nYour ${sign} cosmic profile suggests unique energy shifts are active for you today.`;
 
-    // Get cosmic traits for the day
-    function getCosmicTraits(percentage, sign) {
-        const signData = zodiacData[sign];
-        const baseTraits = [...signData.traits];
-
-        const bonusTraits = {
-            high: ["✨ Magnetic Aura", "🌟 Peak Intuition", "💫 Lucky Streaks"],
-            medium: ["🔮 Clear Vision", "⭐ Good Timing", "🌙 Balanced Energy"],
-            low: ["🛡️ Inner Strength", "🌿 Growth Mindset", "💭 Deep Wisdom"]
+        return {
+            text: fullExplanation,
+            traits: selectedTraits
         };
-
-        let level = percentage >= 60 ? 'high' : (percentage >= 30 ? 'medium' : 'low');
-        const extraTraits = bonusTraits[level].slice(0, 2);
-
-        return [...baseTraits.map(t => `${signData.icon} ${t}`), ...extraTraits];
     }
 
     // Update zodiac display
@@ -154,11 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const [y, m, d] = dob.split('-').map(Number);
-        const sign = getZodiacSign(d, m);
-        const signData = zodiacData[sign];
+        const zodiac = getZodiacSign(d, m);
 
-        document.getElementById('zodiac-name').textContent = sign;
-        document.getElementById('zodiac-icon').textContent = signData.icon;
+        document.getElementById('zodiac-name').textContent = zodiac.name;
+        document.getElementById('zodiac-icon').textContent = zodiac.icon;
         document.getElementById('zodiac-display').classList.remove('zodiac-hidden');
     }
 
@@ -166,25 +343,42 @@ document.addEventListener('DOMContentLoaded', () => {
     function animatePercentage(target) {
         let current = 0;
         const duration = 1500;
-        const increment = target / (duration / 16);
+        const steps = 60;
+        const stepTime = duration / steps;
 
         const progressRing = document.querySelector('.progress-ring-fill');
         const circumference = 2 * Math.PI * 90; // radius is 90
-        const offset = circumference - (target / 100) * circumference;
-        progressRing.style.strokeDashoffset = offset;
 
-        function update() {
-            current += increment;
-            if (current >= target) {
-                resultPercentage.textContent = target;
-                return;
-            }
-            resultPercentage.textContent = Math.floor(current);
-            requestAnimationFrame(update);
+        // Update progress ring color based on percentage
+        let ringColor;
+        if (target >= 70) {
+            ringColor = '#4CAF50'; // Green
+        } else if (target >= 40) {
+            ringColor = 'rgba(255, 230, 128, 1)'; // Gold
+        } else {
+            ringColor = '#FF9800'; // Orange
         }
+        progressRing.style.stroke = ringColor;
+
+        const offset = circumference - (target / 100) * circumference;
 
         // Reset progress ring
         progressRing.style.strokeDashoffset = circumference;
+
+        let step = 0;
+        function update() {
+            step++;
+            const progress = step / steps;
+            current = Math.floor(target * progress);
+            resultPercentage.textContent = current;
+
+            if (step < steps) {
+                setTimeout(update, stepTime);
+            } else {
+                resultPercentage.textContent = target;
+            }
+        }
+
         setTimeout(() => {
             progressRing.style.strokeDashoffset = offset;
             update();
@@ -210,16 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const percentage = calculateLuckyPercentage(name, dob);
         const explanation = generateLuckExplanation(percentage, name, dob);
 
-        const [y, m, d] = dob.split('-').map(Number);
-        const sign = getZodiacSign(d, m);
-        const traits = getCosmicTraits(percentage, sign);
-
-        // Update result view
-        fortuneText.textContent = explanation;
+        // Update result view with formatted text
+        fortuneText.innerHTML = explanation.text.replace(/\n/g, '<br>');
 
         // Clear and add traits
         traitsList.innerHTML = '';
-        traits.forEach(trait => {
+        explanation.traits.forEach(trait => {
             const tag = document.createElement('span');
             tag.className = 'trait-tag';
             tag.textContent = trait;
@@ -249,8 +439,5 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.addEventListener('click', goBack);
     tryAgainBtn.addEventListener('click', goBack);
 
-    // Set default date to 25 years ago (matching iOS app)
-    const defaultDate = new Date();
-    defaultDate.setFullYear(defaultDate.getFullYear() - 25);
-    dobInput.valueAsDate = defaultDate;
+
 });

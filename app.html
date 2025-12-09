@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Discover Your Luck - Celestial Fortune</title>
+    <meta name="description"
+        content="Discover your daily luck percentage powered by celestial alignment and numerology">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+
+<body>
+    <!-- Spinning Galaxy Background -->
+    <!-- Spinning Colliding Galaxies Background -->
+    <div class="galaxy-container">
+        <div class="galaxy-wrapper">
+            <!-- Milky Way -->
+            <div class="galaxy milky-way">
+                <div class="galaxy-core"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+            </div>
+
+            <!-- Andromeda -->
+            <div class="galaxy andromeda">
+                <div class="galaxy-core"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+            </div>
+
+            <div class="stars"></div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Input View -->
+        <div id="input-view" class="view active">
+            <header>
+                <div class="logo-container">
+                    <div class="logo-glow"></div>
+                    <span class="sparkle-icon">✨</span>
+                </div>
+
+                <!-- Logout Button (Hidden by default) -->
+                <button id="logout-btn" class="logout-pill" style="display: none;">
+                    <span id="user-greeting">Hi, User</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+
+                <h1>Discover Your Luck</h1>
+                <p>Powered by celestial alignment & numerology</p>
+            </header>
+
+            <div class="card">
+                <div class="input-group">
+                    <label for="name">
+                        <span class="label-icon">👤</span> YOUR NAME
+                    </label>
+                    <input type="text" id="name" placeholder="Enter your name">
+                </div>
+
+                <div class="input-group">
+                    <label for="dob">
+                        <span class="label-icon">📅</span> DATE OF BIRTH
+                    </label>
+                    <input type="date" id="dob">
+                </div>
+
+                <div id="zodiac-display" class="zodiac-hidden">
+                    <span class="zodiac-label">My Zodiac Sign</span>
+                    <div class="zodiac-content">
+                        <span id="zodiac-icon"></span>
+                        <span id="zodiac-name"></span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="reveal-btn" class="primary-btn" disabled>
+                <span>Reveal My Luck</span>
+                <span class="btn-icon">🪄</span>
+            </button>
+        </div>
+
+        <!-- Result View -->
+        <div id="result-view" class="view">
+            <button id="back-btn" class="back-btn">
+                <span>←</span> Back
+            </button>
+
+            <div class="result-content">
+                <div class="result-header">
+                    <h2>Your Daily Luck</h2>
+                </div>
+
+                <div class="luck-circle">
+                    <svg class="progress-ring" viewBox="0 0 200 200">
+                        <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+                        <circle class="progress-ring-fill" cx="100" cy="100" r="90" />
+                    </svg>
+                    <div class="luck-value">
+                        <span id="result-percentage">0</span>
+                        <span class="percent-sign">%</span>
+                    </div>
+                </div>
+
+                <div class="fortune-card">
+                    <div class="fortune-header">
+                        <span class="fortune-icon">🔍</span>
+                        <h3>Fortune Analysis</h3>
+                    </div>
+                    <p id="fortune-text"></p>
+
+                    <!-- Trait Pills -->
+                    <div id="traits-list" class="traits-list"></div>
+                </div>
+            </div>
+
+            <button id="try-again-btn" class="secondary-btn">
+                <span>🏠</span> Home
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

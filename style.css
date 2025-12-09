@@ -1,22 +1,28 @@
 :root {
-    /* Light Celestial Color Palette - matching iOS app */
-    --accent-purple: rgba(191, 153, 242, 1);      /* Light purple */
+    /* Light Celestial Color Palette - matching iOS app exactly */
+    --accent-purple: rgba(191, 153, 242, 1);
+    /* Color(red: 0.75, green: 0.6, blue: 0.95) */
     --accent-purple-light: rgba(191, 153, 242, 0.3);
-    --accent-gold: rgba(255, 230, 128, 1);        /* Light yellow/gold */
+    --accent-gold: rgba(255, 230, 128, 1);
+    /* Color(red: 1.0, green: 0.9, blue: 0.5) */
     --accent-gold-light: rgba(255, 230, 128, 0.5);
-    --deep-purple: rgba(128, 77, 179, 1);         /* Medium purple for text */
+    --deep-purple: rgba(128, 77, 179, 1);
+    /* Color(red: 0.5, green: 0.3, blue: 0.7) */
     --deep-purple-light: rgba(128, 77, 179, 0.7);
-    
-    /* Background colors */
-    --bg-cream: rgba(255, 250, 230, 1);           /* Soft cream/yellow */
-    --bg-lavender: rgba(242, 230, 255, 1);        /* Very light purple */
-    --bg-white: rgba(250, 243, 255, 1);           /* Lavender white */
-    
+    --deep-purple-lighter: rgba(128, 77, 179, 0.8);
+
+    /* Background colors - matching iOS LinearGradient */
+    --bg-cream: rgba(255, 250, 230, 1);
+    /* Color(red: 1.0, green: 0.98, blue: 0.9) */
+    --bg-lavender: rgba(242, 230, 255, 1);
+    /* Color(red: 0.95, green: 0.9, blue: 1.0) */
+    --bg-white: rgba(250, 243, 255, 1);
+    /* Color(red: 0.98, green: 0.95, blue: 1.0) */
+
     --card-bg: rgba(255, 255, 255, 0.6);
+    --card-bg-solid: rgba(255, 255, 255, 0.7);
     --card-border: rgba(191, 153, 242, 0.3);
     --input-bg: rgba(255, 255, 255, 0.7);
-    --text-primary: rgba(128, 77, 179, 1);
-    --text-secondary: rgba(128, 77, 179, 0.7);
 }
 
 * {
@@ -32,7 +38,8 @@ body {
     background: linear-gradient(135deg, var(--bg-cream) 0%, var(--bg-lavender) 50%, var(--bg-white) 100%);
 }
 
-/* Galaxy Animation Background */
+/* Galaxy Animation Background - matching iOS GalaxyView */
+/* Galaxy Animation Background - Two Colliding Galaxies */
 .galaxy-container {
     position: fixed;
     top: 0;
@@ -42,81 +49,158 @@ body {
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
+    perspective: 1000px;
+    /* Background removed to reveal body's light celestial timeline */
 }
 
-.galaxy-glow {
+.galaxy-wrapper {
     position: absolute;
-    top: 20%;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, var(--accent-purple-light) 0%, rgba(191, 153, 242, 0.1) 40%, transparent 70%);
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    animation: cameraDrift 120s ease-in-out infinite alternate;
+}
+
+/* Common Galaxy Styles */
+.galaxy {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     border-radius: 50%;
-    filter: blur(30px);
+    transform-style: preserve-3d;
 }
 
 .galaxy-core {
     position: absolute;
-    top: calc(20% + 160px);
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 80px;
-    background: radial-gradient(circle, var(--accent-gold) 0%, var(--accent-purple-light) 50%, transparent 70%);
+    transform: translate(-50%, -50%);
     border-radius: 50%;
-    filter: blur(8px);
+    filter: blur(20px);
+    box-shadow: 0 0 60px 20px currentColor;
 }
 
-.galaxy-arms {
-    position: absolute;
-    top: calc(20% + 100px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 300px;
-    height: 300px;
-    animation: rotateGalaxy 30s linear infinite;
-}
-
-.spiral-arm {
+.arm {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 150px;
-    height: 4px;
     transform-origin: left center;
-}
-
-.spiral-arm::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-purple) 0%, transparent 100%);
-    border-radius: 4px;
+    border-radius: 50%;
     filter: blur(2px);
+    opacity: 0.8;
 }
 
-.arm-1 { transform: rotate(0deg); }
-.arm-2 { transform: rotate(90deg); }
-.arm-3 { transform: rotate(180deg); }
-.arm-4 { transform: rotate(270deg); }
-
-.arm-1::before, .arm-3::before {
-    background: linear-gradient(90deg, var(--accent-purple) 0%, transparent 100%);
+/* === Milky Way (Purple Dominant) === */
+.milky-way {
+    width: 600px;
+    height: 600px;
+    margin-top: -300px;
+    margin-left: -300px;
+    transform: rotateX(60deg) rotateZ(0deg) translateZ(-100px);
+    animation: rotateMilkyWay 120s linear infinite;
 }
 
-.arm-2::before, .arm-4::before {
-    background: linear-gradient(90deg, var(--accent-gold-light) 0%, transparent 100%);
+.milky-way .galaxy-core {
+    width: 100px;
+    height: 100px;
+    background-color: var(--accent-gold);
+    color: var(--accent-gold);
+    box-shadow: 0 0 80px 30px rgba(255, 230, 128, 0.4);
 }
 
-.stars {
+.milky-way .arm {
+    width: 300px;
+    height: 160px;
+    border-top: 6px solid var(--accent-purple);
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-left: 10px solid var(--accent-purple-light);
+}
+
+.milky-way .arm:nth-child(2) {
+    transform: rotate(0deg);
+}
+
+.milky-way .arm:nth-child(3) {
+    transform: rotate(120deg);
+}
+
+.milky-way .arm:nth-child(4) {
+    transform: rotate(240deg);
+}
+
+.milky-way .arm::after {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    box-shadow: 0 -5px 20px var(--deep-purple-light);
+}
+
+/* === Andromeda (Gold/Light Purple Dominant) === */
+.andromeda {
+    width: 700px;
+    height: 700px;
+    margin-top: -350px;
+    margin-left: -350px;
+    transform: translate(200px, -200px) rotateX(-50deg) rotateY(20deg);
+    animation: rotateAndromeda 140s linear infinite reverse;
+}
+
+/* Using Gold/Light Purple to match the light theme */
+.andromeda .galaxy-core {
+    width: 120px;
+    height: 120px;
+    background-color: var(--accent-gold);
+    color: var(--accent-gold);
+    box-shadow: 0 0 90px 40px rgba(255, 230, 128, 0.3);
+}
+
+.andromeda .arm {
+    width: 350px;
+    height: 200px;
+    border-top: 5px solid var(--accent-gold-light);
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-left: 8px solid var(--accent-purple-light);
+}
+
+.andromeda .arm:nth-child(2) {
+    transform: rotate(45deg);
+}
+
+.andromeda .arm:nth-child(3) {
+    transform: rotate(165deg);
+}
+
+.andromeda .arm:nth-child(4) {
+    transform: rotate(285deg);
+}
+
+.andromeda .arm::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    box-shadow: 0 -8px 25px rgba(128, 77, 179, 0.2);
+}
+
+/* Stars Background - Restored Original Colored Stars */
+.stars {
+    position: absolute;
     width: 100%;
     height: 100%;
-    background-image: 
+    top: 0;
+    left: 0;
+    background-image:
         radial-gradient(2px 2px at 20% 15%, var(--accent-gold) 100%, transparent),
         radial-gradient(2px 2px at 40% 25%, var(--accent-purple) 100%, transparent),
         radial-gradient(1px 1px at 60% 10%, var(--accent-gold) 100%, transparent),
@@ -126,16 +210,63 @@ body {
         radial-gradient(1px 1px at 30% 40%, var(--accent-gold) 100%, transparent),
         radial-gradient(2px 2px at 70% 45%, var(--accent-purple) 100%, transparent);
     animation: twinkle 4s ease-in-out infinite alternate;
+    opacity: 1;
+    /* Restored opacity */
 }
 
-@keyframes rotateGalaxy {
-    from { transform: translateX(-50%) rotate(0deg); }
-    to { transform: translateX(-50%) rotate(360deg); }
+/* Animations */
+@keyframes rotateMilkyWay {
+    from {
+        transform: rotateX(60deg) rotateZ(0deg) translateZ(-100px);
+    }
+
+    to {
+        transform: rotateX(60deg) rotateZ(360deg) translateZ(-100px);
+    }
+}
+
+@keyframes rotateAndromeda {
+    from {
+        transform: translate(200px, -200px) rotateX(-50deg) rotateY(20deg) rotateZ(0deg);
+    }
+
+    to {
+        transform: translate(150px, -150px) rotateX(-50deg) rotateY(20deg) rotateZ(360deg);
+    }
+
+    /* Slight drift closer */
+}
+
+@keyframes cameraDrift {
+    0% {
+        transform: scale(0.8) rotate(0deg);
+    }
+
+    100% {
+        transform: scale(1.1) rotate(5deg);
+    }
+}
+
+@keyframes moveStars {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-50px);
+    }
 }
 
 @keyframes twinkle {
-    0% { opacity: 0.5; }
-    100% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 /* App Container */
@@ -164,15 +295,25 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
+
 
 /* Header */
 header {
     text-align: center;
-    padding-top: 60px;
-    margin-bottom: 30px;
+    padding-top: 40px;
+    margin-bottom: 25px;
+    position: relative;
+    /* Added for logout button positioning */
 }
 
 .logo-container {
@@ -213,14 +354,40 @@ header p {
     color: var(--deep-purple-light);
 }
 
-/* Card */
+
+/* Logout Pill */
+.logout-pill {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--deep-purple);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.logout-pill:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(191, 153, 242, 0.2);
+}
+
+/* Card - matching iOS glassmorphism */
 .card {
     background: var(--card-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--card-border);
     border-radius: 24px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 24px;
 }
 
@@ -239,7 +406,7 @@ label {
     gap: 6px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--deep-purple-light);
+    color: var(--deep-purple-lighter);
     margin-bottom: 8px;
     letter-spacing: 0.05em;
 }
@@ -252,7 +419,7 @@ input {
     width: 100%;
     padding: 14px 16px;
     background: var(--input-bg);
-    border: 1px solid var(--accent-purple-light);
+    border: 1px solid rgba(191, 153, 242, 0.5);
     border-radius: 12px;
     font-family: inherit;
     font-size: 1rem;
@@ -271,12 +438,12 @@ input:focus {
     background: white;
 }
 
-/* Zodiac Display */
+/* Zodiac Display - matching iOS */
 #zodiac-display {
     margin-top: 20px;
     padding: 16px;
-    background: var(--accent-gold-light);
-    border: 1px solid var(--accent-gold);
+    background: rgba(255, 230, 128, 0.2);
+    border: 1px solid rgba(255, 230, 128, 0.5);
     border-radius: 16px;
     text-align: center;
     transition: all 0.3s ease;
@@ -317,11 +484,11 @@ input:focus {
     color: var(--deep-purple);
 }
 
-/* Buttons */
+/* Buttons - matching iOS */
 .primary-btn {
     width: 100%;
     padding: 16px 24px;
-    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
+    background: linear-gradient(135deg, var(--accent-gold) 0%, rgba(255, 230, 128, 0.8) 100%);
     border: none;
     border-radius: 16px;
     font-family: inherit;
@@ -339,7 +506,7 @@ input:focus {
 }
 
 .primary-btn:disabled {
-    background: linear-gradient(135deg, #ccc 0%, #ddd 100%);
+    background: linear-gradient(135deg, rgba(128, 128, 128, 0.5) 0%, rgba(128, 128, 128, 0.5) 100%);
     box-shadow: none;
     cursor: not-allowed;
     color: #999;
@@ -360,9 +527,9 @@ input:focus {
 
 .secondary-btn {
     width: 100%;
-    padding: 14px 24px;
-    background: white;
-    border: 2px solid var(--accent-purple);
+    padding: 16px 24px;
+    background: linear-gradient(135deg, var(--accent-gold) 0%, rgba(255, 230, 128, 0.8) 100%);
+    border: none;
     border-radius: 16px;
     font-family: inherit;
     font-size: 1rem;
@@ -373,11 +540,13 @@ input:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    box-shadow: 0 8px 20px rgba(255, 230, 128, 0.3);
     transition: all 0.2s ease;
 }
 
 .secondary-btn:hover {
-    background: var(--accent-purple-light);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(255, 230, 128, 0.4);
 }
 
 .back-btn {
@@ -407,6 +576,7 @@ input:focus {
 /* Result View */
 #result-view {
     padding-top: 60px;
+    position: relative;
 }
 
 .result-content {
@@ -418,27 +588,22 @@ input:focus {
 
 .result-header {
     text-align: center;
-    margin-bottom: 24px;
-}
-
-.result-sparkle {
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 8px;
+    margin-bottom: 20px;
 }
 
 .result-header h2 {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 500;
     color: var(--deep-purple);
 }
 
-/* Luck Circle */
+/* Luck Circle - matching iOS */
 .luck-circle {
     position: relative;
     width: 200px;
     height: 200px;
-    margin-bottom: 24px;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 10px 20px rgba(128, 77, 179, 0.2));
 }
 
 .progress-ring {
@@ -449,13 +614,13 @@ input:focus {
 
 .progress-ring-bg {
     fill: none;
-    stroke: var(--accent-purple-light);
+    stroke: rgba(191, 153, 242, 0.2);
     stroke-width: 12;
 }
 
 .progress-ring-fill {
     fill: none;
-    stroke: url(#gradient);
+    stroke: var(--accent-gold);
     stroke-width: 12;
     stroke-linecap: round;
     stroke-dasharray: 565.48;
@@ -467,61 +632,30 @@ input:focus {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -50%);
     display: flex;
     align-items: baseline;
+    flex-direction: column;
+    text-align: center;
 }
 
 #result-percentage {
-    font-size: 3.5rem;
-    font-weight: 900;
+    font-size: 4.5rem;
+    font-weight: 700;
     color: var(--deep-purple);
+    line-height: 1;
 }
 
 .percent-sign {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 300;
     color: var(--deep-purple-light);
 }
 
-.luck-label {
-    position: absolute;
-    top: 65%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--deep-purple-light);
-}
-
-/* Fortune Card */
+/* Fortune Card - matching iOS */
 .fortune-card {
     width: 100%;
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 16px;
-}
-
-.fortune-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--deep-purple);
-    margin-bottom: 12px;
-}
-
-#fortune-text {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--deep-purple-light);
-}
-
-/* Traits Container */
-.traits-container {
-    width: 100%;
-    background: var(--card-bg);
+    background: var(--card-bg-solid);
     backdrop-filter: blur(10px);
     border: 1px solid var(--card-border);
     border-radius: 20px;
@@ -529,31 +663,46 @@ input:focus {
     margin-bottom: 24px;
 }
 
-.traits-container h3 {
+.fortune-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.fortune-icon {
+    font-size: 1.2rem;
+}
+
+.fortune-card h3 {
     font-size: 1rem;
     font-weight: 600;
     color: var(--deep-purple);
-    margin-bottom: 12px;
+    margin: 0;
 }
 
+#fortune-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--deep-purple-lighter);
+    margin-bottom: 16px;
+}
+
+/* Traits - matching iOS trait pills */
 .traits-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
 }
 
 .trait-tag {
     padding: 8px 14px;
-    background: linear-gradient(135deg, var(--accent-purple-light) 0%, var(--accent-gold-light) 100%);
+    background: rgba(191, 153, 242, 0.5);
+    border: 1px solid rgba(255, 230, 128, 0.5);
     border-radius: 20px;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--deep-purple);
-}
-
-/* SVG Gradient Definition */
-svg defs {
-    position: absolute;
 }
 
 /* Responsive */
@@ -561,22 +710,22 @@ svg defs {
     .app-container {
         padding: 16px;
     }
-    
+
     h1 {
         font-size: 1.75rem;
     }
-    
+
     .card {
         padding: 20px;
     }
-    
+
     .luck-circle {
         width: 180px;
         height: 180px;
     }
-    
+
     #result-percentage {
-        font-size: 3rem;
+        font-size: 4rem;
     }
 }
 

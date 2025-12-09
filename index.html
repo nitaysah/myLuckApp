@@ -4,111 +4,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Discover Your Luck - Celestial Fortune</title>
-    <meta name="description" content="Discover your daily luck percentage powered by celestial alignment and numerology">
+    <title>Get Started - Celestial Fortune</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        .login-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--deep-purple);
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(191, 153, 242, 0.3);
+            background: linear-gradient(135deg, var(--deep-purple) 0%, #4a2c6d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--deep-purple-lighter);
+            margin-bottom: 40px;
+            max-width: 300px;
+        }
+
+        .google-btn {
+            background: white;
+            color: #444;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-weight: 500;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .google-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .divider {
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 280px;
+            color: var(--deep-purple-light);
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(128, 77, 179, 0.2);
+        }
+
+        .divider span {
+            padding: 0 10px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--accent-purple-light);
+            border-top: 4px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Spinning Galaxy Background -->
+    <!-- Colliding Galaxy Background (Shared) -->
     <div class="galaxy-container">
-        <div class="galaxy-glow"></div>
-        <div class="galaxy-core"></div>
-        <div class="galaxy-arms">
-            <div class="spiral-arm arm-1"></div>
-            <div class="spiral-arm arm-2"></div>
-            <div class="spiral-arm arm-3"></div>
-            <div class="spiral-arm arm-4"></div>
-        </div>
-        <div class="stars"></div>
-    </div>
-
-    <div class="app-container">
-        <!-- Input View -->
-        <div id="input-view" class="view active">
-            <header>
-                <div class="logo-container">
-                    <div class="logo-glow"></div>
-                    <span class="sparkle-icon">✨</span>
-                </div>
-                <h1>Discover Your Luck</h1>
-                <p>Powered by celestial alignment & numerology</p>
-            </header>
-
-            <div class="card">
-                <div class="input-group">
-                    <label for="name">
-                        <span class="label-icon">👤</span> YOUR NAME
-                    </label>
-                    <input type="text" id="name" placeholder="Enter your name">
-                </div>
-
-                <div class="input-group">
-                    <label for="dob">
-                        <span class="label-icon">📅</span> DATE OF BIRTH
-                    </label>
-                    <input type="date" id="dob">
-                </div>
-
-                <div id="zodiac-display" class="zodiac-hidden">
-                    <span class="zodiac-label">My Zodiac Sign</span>
-                    <div class="zodiac-content">
-                        <span id="zodiac-icon"></span>
-                        <span id="zodiac-name"></span>
-                    </div>
-                </div>
+        <div class="galaxy-wrapper">
+            <div class="galaxy milky-way">
+                <div class="galaxy-core"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
             </div>
-
-            <button id="reveal-btn" class="primary-btn" disabled>
-                <span>Reveal My Luck</span>
-                <span class="btn-icon">🪄</span>
-            </button>
-        </div>
-
-        <!-- Result View -->
-        <div id="result-view" class="view">
-            <button id="back-btn" class="back-btn">
-                <span>←</span> Back
-            </button>
-            
-            <div class="result-content">
-                <div class="result-header">
-                    <span class="result-sparkle">✨</span>
-                    <h2>Your Cosmic Fortune</h2>
-                </div>
-
-                <div class="luck-circle">
-                    <svg class="progress-ring" viewBox="0 0 200 200">
-                        <circle class="progress-ring-bg" cx="100" cy="100" r="90"/>
-                        <circle class="progress-ring-fill" cx="100" cy="100" r="90"/>
-                    </svg>
-                    <div class="luck-value">
-                        <span id="result-percentage">0</span>
-                        <span class="percent-sign">%</span>
-                    </div>
-                    <span class="luck-label">Lucky Today</span>
-                </div>
-
-                <div class="fortune-card">
-                    <h3>🔮 Fortune Analysis</h3>
-                    <p id="fortune-text"></p>
-                </div>
-
-                <div class="traits-container">
-                    <h3>⭐ Today's Cosmic Traits</h3>
-                    <div id="traits-list" class="traits-list"></div>
-                </div>
+            <div class="galaxy andromeda">
+                <div class="galaxy-core"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
             </div>
-
-            <button id="try-again-btn" class="secondary-btn">
-                <span>🔄</span> Try Again
-            </button>
+            <div class="stars"></div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Login View -->
+    <div class="login-view">
+        <div class="logo-container">
+            <div class="logo-glow"></div>
+            <span class="sparkle-icon">✨</span>
+        </div>
+
+        <h1 class="hero-title">Celestial<br>Fortune</h1>
+        <p class="hero-subtitle">Unlock the secrets of your daily luck through the cosmos.</p>
+
+        <!-- Manual Login Form -->
+        <div style="width: 100%; max-width: 320px; text-align: left;">
+            <input type="text" id="email-input" placeholder="Email or Username"
+                style="width: 100%; padding: 12px 16px; margin-bottom: 10px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9);">
+            <input type="password" id="password-input" placeholder="Password"
+                style="width: 100%; padding: 12px 16px; margin-bottom: 16px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9);">
+
+            <button id="manual-login-btn" class="google-btn"
+                style="background: var(--deep-purple); color: white; justify-content: center; width: 100%; padding: 12px; margin-bottom: 15px;">
+                Sign In
+            </button>
+
+            <div style="text-align: center; margin-bottom: 15px;">
+                <p style="color: var(--deep-purple); margin-bottom: 10px;">Don't have an account?</p>
+                <a href="signup.html" class="google-btn"
+                    style="background: white; color: var(--deep-purple); border: 1px solid var(--deep-purple); justify-content: center; text-decoration: none; display: flex; box-sizing: border-box;">
+                    Create Account
+                </a>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="#" id="forgot-password-link"
+                    style="color: var(--deep-purple); font-size: 0.9rem; text-decoration: none; font-weight: 500;">Forgot
+                    Password?</a>
+            </div>
+        </div>
+
+        <div class="divider" style="margin-top: 20px;">
+            <span>or continue as guest</span>
+        </div>
+
+        <button id="guest-btn"
+            style="background:transparent; border:none; color:var(--deep-purple); font-weight:600; cursor:pointer;">
+            Skip for now
+        </button>
+    </div>
+
+    <!-- Simulated Loading Screen -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text" style="color:var(--deep-purple); font-weight:500;">Connecting...</p>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        const manualBtn = document.getElementById('manual-login-btn');
+        const forgotLink = document.getElementById('forgot-password-link');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const guestBtn = document.getElementById('guest-btn');
+        const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+
+        function showLoading(msg) {
+            loadingText.textContent = msg;
+            loading.classList.add('active');
+        }
+
+        function hideLoading() {
+            loading.classList.remove('active');
+        }
+
+        // Manual Auth Handler - LOGIN ONLY
+        async function handleLogin() {
+            const loginInput = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!loginInput || !password) {
+                alert('Please enter your email/username and password');
+                return;
+            }
+
+            try {
+                showLoading('Verifying...');
+                let emailToUse = loginInput;
+
+                // Check if input is a username (no '@')
+                if (!loginInput.includes('@')) {
+                    const q = query(collection(db, "users"), where("username", "==", loginInput));
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        throw new Error("No account found with this username.");
+                    }
+
+                    // Get the first match (usernames should be unique)
+                    emailToUse = querySnapshot.docs[0].data().email;
+                }
+
+                showLoading('Signing In...');
+
+                // Sign In with Firebase Auth
+                const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
+                const user = userCredential.user;
+
+                // Fetch full profile from Firestore (to get DOB, etc.)
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    // Save to LocalStorage (Session Cache)
+                    localStorage.setItem('currentUser', JSON.stringify(userData));
+                    window.location.href = 'app.html';
+                } else {
+                    // Fallback if no Firestore doc exists
+                    alert("User profile not found. Please contact support.");
+                    hideLoading();
+                }
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                hideLoading();
+
+                let msg = error.message;
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    msg = "Incorrect username/email or password.";
+                }
+
+                alert(msg);
+            }
+        }
+
+        if (manualBtn) manualBtn.addEventListener('click', handleLogin);
+
+        if (forgotLink) forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter your EMAIL address to reset your password.');
+            } else {
+                // We'll update this to real Firebase reset later if requested
+                alert(`Password reset link has been sent to ${email}`);
+            }
+        });
+
+        if (guestBtn) guestBtn.addEventListener('click', () => {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'app.html';
+        });
+    </script>
 </body>
 
 </html>
