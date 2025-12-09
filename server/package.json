@@ -1,0 +1,13 @@
+{
+  "name": "myluckapp-server",
+  "version": "0.1.0",
+  "description": "Prototype API for myLuckApp: assess-luck endpoint",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}

@@ -398,18 +398,40 @@ document.addEventListener('DOMContentLoaded', () => {
     dobInput.addEventListener('input', checkInputs);
     dobInput.addEventListener('change', checkInputs);
 
-    revealBtn.addEventListener('click', () => {
+    revealBtn.addEventListener('click', async () => {
         if (!name || !dob) return;
 
-        const percentage = calculateLuckyPercentage(name, dob);
-        const explanation = generateLuckExplanation(percentage, name, dob);
+        // Try server prototype first; fall back to local deterministic calculation
+        let percentage, explanation;
+        try {
+            const res = await fetch('/api/assess-luck', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, dob, optInSignals: { astro: false, history: false } })
+            });
+
+            if (!res.ok) throw new Error('server error');
+
+            const data = await res.json();
+            percentage = Number(data.percentage);
+
+            // Build an explanation object compatible with existing UI
+            explanation = {
+                text: data.explanation || `Calibrated score: ${percentage}% (baseline ${data.baseline}%)`,
+                traits: (data.factors || []).map(f => f.name)
+            };
+        } catch (err) {
+            console.warn('Server fetch failed, falling back to local calc', err);
+            percentage = calculateLuckyPercentage(name, dob);
+            explanation = generateLuckExplanation(percentage, name, dob);
+        }
 
         // Update result view with formatted text
         fortuneText.innerHTML = explanation.text.replace(/\n/g, '<br>');
 
         // Clear and add traits
         traitsList.innerHTML = '';
-        explanation.traits.forEach(trait => {
+        (explanation.traits || []).forEach(trait => {
             const tag = document.createElement('span');
             tag.className = 'trait-tag';
             tag.textContent = trait;
