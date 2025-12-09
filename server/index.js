@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -129,5 +130,14 @@ app.post('/api/assess-luck', (req, res) => {
   }
 });
 
+// Serve static files from project root so the frontend and API run on same origin.
+const root = path.join(__dirname, '..');
+app.use(express.static(root));
+
+// Fallback for SPA routes to index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(root, 'index.html'));
+});
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`myluckapp prototype server running on port ${port}`));
+app.listen(port, () => console.log(`myluckapp prototype server (static + api) running on port ${port}`));
